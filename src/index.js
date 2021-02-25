@@ -66,7 +66,7 @@ const SignInForm = () => {
   };
 
   return (
-    <div style={{ padding: "20vh 0 0 40vw", width: "100vw" }}>
+    <div style={{ padding: "20vh 0 0 15vw" }}>
       <Col>
         <Row>
           <Col span={5}>
