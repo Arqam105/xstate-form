@@ -1,102 +1,136 @@
-const machineConfig = {
-  id: 'signIn',
-  context: {
-    email: '',
-    password: '',
-  },
-  initial: 'dataEntry',
+const emailStates = {
+  initial: "noError",
   states: {
-    awaitingResponse: {
-      // Make a call to the authentication service      
-      invoke: {
-        src: 'requestSignIn',
-        // If successful, move to the signedIn state
-        onDone: {
-          target: 'signedIn'
+    noError: {},
+    error: {
+      initial: "empty",
+      states: {
+        empty: {},
+        badFormat: {},
+        noAccount: {}
+      },
+      onEntry: "focusEmailInput"
+    }
+  }
+};
+
+const passwordStates = {
+  initial: "noError",
+  states: {
+    noError: {},
+    error: {
+      initial: "empty",
+      states: {
+        empty: {},
+        tooShort: {},
+        incorrect: {}
+      },
+      onEntry: "focusPasswordInput"
+    }
+  }
+};
+
+const authServiceStates = {
+  initial: "noError",
+  states: {
+    noError: {},
+    error: {
+      initial: "communication",
+      states: {
+        communication: {
+          on: {
+            SUBMIT: "#signInForm.waitingResponse"
+          }
         },
-        // If email input is unsuccessful, move to the emailErr.noAccount sub-state
-        onError: [
+        internal: {}
+      }
+    }
+  }
+};
+
+const machineConfig = {
+  id: "signInForm",
+  context: {
+    email: "",
+    password: ""
+  },
+  initial: "ready",
+  states: {
+    ready: {
+      type: "parallel",
+      on: {
+        INPUT_EMAIL: {
+          actions: "cacheEmail",
+          target: "ready.email.noError"
+        },
+        INPUT_PASSWORD: {
+          actions: "cachePassword",
+          target: "ready.password.noError"
+        },
+        SUBMIT: [
           {
-            cond: 'isNoAccount',
-            target: 'emailErr.noAccount'
+            cond: "isNoEmail",
+            target: "ready.email.error.empty"
           },
           {
-            // If password input is unsuccessful, move to the passwordErr.incorrect sub-state
-            cond: 'isIncorrectPassword',
-            target: 'passwordErr.incorrect'
+            cond: "isEmailBadFormat",
+            target: "ready.email.error.badFormat"
           },
           {
-            // If the service itself cannot be reached, move to the serviceErr state
-            cond: 'isServiceErr',
-            target: 'serviceErr'
+            cond: "isNoPassword",
+            target: "ready.password.error.empty"
+          },
+          {
+            cond: "isPasswordShort",
+            target: "ready.password.error.tooShort"
+          },
+          {
+            target: "waitingResponse"
           }
         ]
       },
+      states: {
+        email: {
+          ...emailStates
+        },
+        password: {
+          ...passwordStates
+        },
+        authService: {
+          ...authServiceStates
+        }
+      }
     },
-    dataEntry: {
+    waitingResponse: {
       on: {
-        ENTER_EMAIL: {
-          actions: 'cacheEmail'
-        },
-        ENTER_PASSWORD: {
-          actions: 'cachePassword'
-        },
+        CANCEL: "ready"
       },
-        SUBMIT: [
+      invoke: {
+        src: "requestSignIn",
+        onDone: {
+          actions: "onSuccess"
+        },
+        onError: [
           {
-            cond: 'isBadEmailFormat',
-            target: 'emailErr.badFormat'
+            cond: "isNoAccount",
+            target: "ready.email.error.noAccount"
           },
           {
-            cond: 'isPasswordShort',
-            target: 'passwordErr.tooShort'
+            cond: "isIncorrectPassword",
+            target: "ready.password.error.incorrect"
           },
           {
-            target: 'awaitingResponse'
+            cond: "isNoResponse",
+            target: "ready.authService.error.communication"
+          },
+          {
+            cond: "isInternalServerErr",
+            target: "ready.authService.error.internal"
           }
-        ],
-    },
-    awaitingResponse: {},
-    emailErr: {
-      on: {
-        ENTER_EMAIL: {
-          actions: 'cacheEmail',
-        }
-      },
-      initial: 'badFormat',
-      states: {
-        badFormat: {},
-        noAccount: {},
-      },
-    },
-    passwordErr: {
-      on: {
-        ENTER_PASSWORD: {
-          actions: 'cachePassword',
-          ...        
-        }
-      },
-      initial: 'tooShort',
-      states: {
-        tooShort: {},
-        incorrect: {},
-      },
-    },
-    serviceErr: {
-      on: {
-        SUBMIT: {
-          target: 'awaitingResponse',
-        },
-      },
-    },
-    signedIn: {},
-  },
-    signedIn: {
-      type: 'final'
-    },
-    onDone: {
-      actions: 'onAuthentication'
-    },
+        ]
+      }
+    }
+  }
 };
 
 export default machineConfig;
