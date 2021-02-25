@@ -8,7 +8,7 @@ const contactAuthService = (email, password) =>
     setTimeout(() => {
       if (isSuccess()) resolve()
       reject({ code: generateErrCode() })
-    }, 1500)
+    }, 1000)
 })
 
 export default contactAuthService
