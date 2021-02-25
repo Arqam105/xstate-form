@@ -22,7 +22,7 @@ const { assign } = actions;
 
 const delay = (func) => setTimeout(() => func());
 
-class SignIn extends Component {
+const SignIn =()=> {
   emailInputRef = createRef();
   passwordInputRef = createRef();
   submitBtnRef = createRef();
