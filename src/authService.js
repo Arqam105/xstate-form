@@ -8,7 +8,7 @@ const isNoResponse = () => Math.random() >= 0.75;
 export const signIn = (email, password) =>
   new Promise((resolve, reject) => {
     setTimeout(() => {
-      if (email !== "admin@admin.com") {
+      if (email !== "developer@developer.com") {
         reject({ code: 1 });
       }
 

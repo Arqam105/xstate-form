@@ -2,20 +2,14 @@ import React, { useRef } from "react";
 import ReactDOM from "react-dom";
 import { Machine } from "xstate";
 import { useMachine } from "@xstate/react";
-import Textfield from "@atlaskit/textfield";
-import Button, { ButtonGroup } from "@atlaskit/button";
-import {
-  FormHeader,
-  FormSection,
-  FormFooter,
-  ErrorMessage
-} from "@atlaskit/form";
-import "@atlaskit/css-reset";
 import machineConfig from "./machineConfig";
 import initMachineOptions from "./initMachineOptions";
-import { Page, Form, Label, ErrorMessagePlaceholder } from "./components";
 import { defer } from "lodash";
-
+import { Layout, Button, Typography, Row, Col } from "antd";
+import "antd/dist/antd.css";
+import { Input } from "antd";
+import { UserOutlined } from "@ant-design/icons";
+const { Text, Link, Title } = Typography;
 const SignInForm = () => {
   const emailInputRef = useRef(null);
   const passwordInputRef = useRef(null);
@@ -48,112 +42,133 @@ const SignInForm = () => {
   const signInMachine = Machine(machineConfig, machineOptions);
   const [current, send] = useMachine(signInMachine);
 
-  const handleEmailChange = e => {
+  const handleEmailChange = (e) => {
     send({
       type: "INPUT_EMAIL",
-      email: e.target.value
+      email: e.target.value,
     });
   };
 
-  const handlePasswordChange = e => {
+  const handlePasswordChange = (e) => {
     send({
       type: "INPUT_PASSWORD",
-      password: e.target.value
+      password: e.target.value,
     });
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = (e) => {
     e.preventDefault();
     send({ type: "SUBMIT" });
   };
 
-  const handleCancel = e => {
+  const handleCancel = (e) => {
     send({ type: "CANCEL" });
   };
 
   return (
-    <Page>
-      <p>
-        email: admin@admin.com
-        <br />
-        password: admin
-      </p>
-
-      <Form onSubmit={handleSubmit} noValidate>
-        <FormHeader title="Sign in" />
-
-        <FormSection>
-          <Label htmlFor="email">Email *</Label>
-
-          <Textfield
-            name="email"
-            id="email"
-            value={current.context.email}
-            ref={emailInputRef}
-            onChange={handleEmailChange}
-            isRequired
-            disabled={current.matches("waitingResponse")}
-            autoFocus
-          />
-
-          {current.matches("ready.email.error") ? (
-            <ErrorMessage>
-              {current.matches("ready.email.error.empty") &&
-                "please enter your email"}
-              {current.matches("ready.email.error.badFormat") &&
-                "email format doesn't look right"}
-              {current.matches("ready.email.error.noAccount") &&
-                "no account linked with this email"}
-            </ErrorMessage>
-          ) : (
-            <ErrorMessagePlaceholder />
-          )}
-
-          <Label htmlFor="password">Password *</Label>
-
-          <Textfield
-            id="password"
-            name="password"
-            label="Password"
-            type="password"
-            ref={passwordInputRef}
-            value={current.context.password}
-            disabled={current.matches("waitingResponse")}
-            onChange={handlePasswordChange}
-            isRequired
-          />
-
-          {current.matches("ready.password.error") ? (
-            <ErrorMessage>
-              {current.matches("ready.password.error.empty") &&
-                "please enter your password"}
-              {current.matches("ready.password.error.tooShort") &&
-                "password should be at least 5 characters"}
-              {current.matches("ready.password.error.incorrect") &&
-                "incorrect password"}
-            </ErrorMessage>
-          ) : (
-            <ErrorMessagePlaceholder />
-          )}
-        </FormSection>
-
-        <FormFooter>
-          <ButtonGroup>
-            <Button appearance="subtle" onClick={handleCancel}>
-              Cancel
-            </Button>
+    <div style={{ padding: "20vh 0 0 40vw", width: "100vw" }}>
+      <Col>
+        <Row>
+          <Col span={5}>
+            <p>developer@developer.com</p>
+          </Col>
+        </Row>
+        <Row>
+          <Col span={5}>
+            <p>admin</p>
+          </Col>
+        </Row>
+        <Row>
+          <Col span={5}>
+            <Title>Sign in</Title>
+          </Col>
+        </Row>
+        <Row>
+          <Col span={5}>
+            <Text type="strong">Email *</Text>
+          </Col>
+        </Row>
+        <Row>
+          <Col span={5}>
+            <Input
+              name="email"
+              id="email"
+              value={current.context.email}
+              ref={emailInputRef}
+              onChange={handleEmailChange}
+              isRequired
+              disabled={current.matches("waitingResponse")}
+              autoFocus
+              prefix={<UserOutlined />}
+            />
+          </Col>
+        </Row>
+        <Row>
+          <Col span={5}>
+            {current.matches("ready.email.error") ? (
+              <Text type="danger">
+                {current.matches("ready.email.error.empty") &&
+                  "please enter your email"}
+                {current.matches("ready.email.error.badFormat") &&
+                  "email format doesn't look right"}
+                {current.matches("ready.email.error.noAccount") &&
+                  "no account linked with this email"}
+              </Text>
+            ) : (
+              <br />
+            )}
+          </Col>
+        </Row>
+        <Row>
+          <Col span={5}>
+            <Text type="strong">Password *</Text>
+          </Col>
+        </Row>
+        <Row>
+          <Col span={5}>
+            <Input
+              id="password"
+              name="password"
+              label="Password"
+              type="password"
+              ref={passwordInputRef}
+              value={current.context.password}
+              disabled={current.matches("waitingResponse")}
+              onChange={handlePasswordChange}
+              isRequired
+            />
+          </Col>
+        </Row>
+        <Row>
+          <Col span={5}>
+            {current.matches("ready.password.error") ? (
+              <Text type="danger">
+                {current.matches("ready.password.error.empty") &&
+                  "please enter your password"}
+                {current.matches("ready.password.error.tooShort") &&
+                  "password should be at least 5 characters"}
+                {current.matches("ready.password.error.incorrect") &&
+                  "incorrect password"}
+              </Text>
+            ) : (
+              <br />
+            )}
+          </Col>
+        </Row>
+        <Row>
+          <Col span={5}>
+            <Button onClick={handleCancel}>Cancel</Button>
             <Button
-              type="submit"
-              appearance="primary"
+              onClick={handleSubmit}
               isLoading={current.matches("waitingResponse")}
               ref={submitButtonnRef}
             >
               Sign in
             </Button>
-          </ButtonGroup>
-        </FormFooter>
-      </Form>
-    </Page>
+          </Col>
+        </Row>
+      </Col>
+    </div>
   );
 };
 
